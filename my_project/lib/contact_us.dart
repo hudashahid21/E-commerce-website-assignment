@@ -129,7 +129,7 @@ class ContactUsPage extends StatelessWidget {
                           padding: EdgeInsets.only(top: 4), // Adjusted spacing
                           child: Icon(Icons.email, color: Colors.black, size: 24),
                         ),
-                        title: Text("support@ecommerce.com", style: TextStyle(fontSize: 16)),
+                        title: Text("support@LuxeSkin.com", style: TextStyle(fontSize: 16)),
                       ),
                       ListTile(
                         leading: Padding(

@@ -34,7 +34,7 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.black,
         title: Text(
-          "E-Commerce",
+          "LuxeSkin & Beauty",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -52,15 +52,6 @@ class HomePage extends StatelessWidget {
                 MaterialPageRoute(builder: (context) => ProductPage()),
               );
             },
-            child: Text("Products", style: TextStyle(color: Colors.white)),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AboutUsPage()),
-              );
-            },
             child: Text("About Us", style: TextStyle(color: Colors.white)),
           ),
           TextButton(
@@ -68,6 +59,15 @@ class HomePage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => ContactUsPage()), // ✅ Connected Contact Us Page
+              );
+            },
+             child: Text("Products", style: TextStyle(color: Colors.white)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AboutUsPage()),
               );
             },
             child: Text("Contact Us", style: TextStyle(color: Colors.white)),
@@ -183,7 +183,7 @@ class HomePage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              "E-Commerce App",
+              "LuxeSkin & Beauty",
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 20,
@@ -192,9 +192,15 @@ class HomePage extends StatelessWidget {
             ),
             SizedBox(height: 10),
             Text(
-              "Contact: contact@ecommerce.com",
+              "Contact: +1 234 567 890",
               style: TextStyle(color: Colors.white),
             ),
+            SizedBox(height: 10),
+            Text(
+              "Email: support@LuxeSkin.com",
+              style: TextStyle(color: Colors.white),
+            ),
+            
             SizedBox(height: 5),
             Text(
               "Privacy Policy | Terms of Service",

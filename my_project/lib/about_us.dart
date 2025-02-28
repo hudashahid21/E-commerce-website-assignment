@@ -19,7 +19,7 @@ class AboutUsPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "About Our E-Commerce App",
+                "About Our LuxeSkin & Beauty",
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
@@ -28,7 +28,7 @@ class AboutUsPage extends StatelessWidget {
               ),
               SizedBox(height: 20),
               Text(
-                "Welcome to our e-commerce platform! We bring you the best products at the best prices. "
+                "Welcome to our LuxeSkin & Beauty website! We bring you the best products at the best prices. "
                 "Our mission is to make online shopping easy, fast, and secure. We offer a wide range of beauty, "
                 "skin care, and lifestyle products to suit all your needs.",
                 style: TextStyle(fontSize: 18),
