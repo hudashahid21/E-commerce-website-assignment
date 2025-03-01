@@ -1,72 +1,91 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'product_detail_page.dart';
 
 class ProductPage extends StatelessWidget {
-  final List<Map<String, dynamic>> products = [
-    {"image": "assets/images/vitaminc.jpg", "name": "Vitamin C Serum", "price": 90},
-    {"image": "assets/images/Hyaluronic.jpg", "name": "Hyaluronic Acid Face Serum", "price": 80},
-    {"image": "assets/images/primer.jpeg", "name": "Elf Primer", "price": 70},
-    {"image": "assets/images/fitme.png", "name": "Fitme Foundation", "price": 90},
-    {"image": "assets/images/nars.jpeg", "name": "Nars Face Powder", "price": 95},
-    {"image": "assets/images/NYX_BlushCollection.jpg", "name": "NYX Blush Collection", "price": 69},
-    {"image": "assets/images/iconic.jpg", "name": "Iconic Illuminator", "price": 60},
-    {"image": "assets/images/maybeline.jpg", "name": "Maybelline Mascara", "price": 60},
-    {"image": "assets/images/hudabeauty.jpeg", "name": "Huda Beauty Pencil & Eyeliner", "price": 55},
-    {"image": "assets/images/eyeshadow.jpg", "name": "Nude Eyeshadow Palette", "price": 75},
-    {"image": "assets/images/maclipstick.jpg", "name": "Mac Lipstick", "price": 45},
-    {"image": "assets/images/makeupfixer.jpeg", "name": "Lakme Makeup Fixer", "price": 40},
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black,
         title: Text(
           "Products",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.white), // Title in white
         ),
-        iconTheme: IconThemeData(color: Colors.white), // 🔥 Back Icon ka color white
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: GridView.builder(
-          itemCount: products.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3, // ✅ 3 Cards in one row
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: 0.7, // Adjust height of cards
-          ),
-          itemBuilder: (context, index) {
-            final product = products[index];
-            return Card(
-              elevation: 5,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Image.asset(
-                      product["image"],
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                    ),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    product["name"],
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    "\$${product["price"]}",
-                    style: TextStyle(fontSize: 14, color: Colors.red, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            );
+        backgroundColor: Colors.black,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white), // Back arrow in white
+          onPressed: () {
+            Navigator.pop(context);
           },
         ),
+      ),
+      body: StreamBuilder(
+        stream: FirebaseFirestore.instance.collection('Product').snapshots(),
+        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Center(child: Text('No products found'));
+          } else {
+            var products = snapshot.data!.docs;
+            return GridView.builder(
+              padding: EdgeInsets.all(8),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                childAspectRatio: 0.8,
+              ),
+              itemCount: products.length,
+              itemBuilder: (context, index) {
+                var product = products[index];
+                String imageUrl = product['image'] ?? "https://via.placeholder.com/150";
+
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProductDetailPage(
+                          title: product['Title'] ?? "No Title",
+                          description: product['Description'] ?? "No Description",
+                          price: product['Price'] ?? "0.00",
+                          imageUrl: imageUrl,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Card(
+                    elevation: 5,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                            child: Image.network(imageUrl, fit: BoxFit.cover, width: double.infinity),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Column(
+                            children: [
+                              Text(product['Title'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                              SizedBox(height: 5),
+                              Text("\$${product['Price']}", style: TextStyle(fontSize: 14, color: Colors.red, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          }
+        },
       ),
     );
   }

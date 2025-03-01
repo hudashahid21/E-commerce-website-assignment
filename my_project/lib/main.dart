@@ -1,12 +1,14 @@
-// ignore_for_file: depend_on_referenced_packages
-
-import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'about_us.dart'; // Import About Us Page
-import 'contact_us.dart'; // ✅ Import Contact Us Page
-import 'product_page.dart'; // ✅ Import Product Page
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'firebase_options.dart';
+import 'product_page.dart';
+import 'about_us.dart';
+import 'contact_us.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(MyApp());
 }
 
@@ -35,10 +37,7 @@ class HomePage extends StatelessWidget {
         backgroundColor: Colors.black,
         title: Text(
           "LuxeSkin & Beauty",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         actions: [
           TextButton(
@@ -47,28 +46,19 @@ class HomePage extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProductPage()),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (context) => AboutUsPage()));
             },
             child: Text("About Us", style: TextStyle(color: Colors.white)),
           ),
           TextButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ContactUsPage()), // ✅ Connected Contact Us Page
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ProductPage()));
             },
-             child: Text("Products", style: TextStyle(color: Colors.white)),
+            child: Text("Products", style: TextStyle(color: Colors.white)),
           ),
           TextButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AboutUsPage()),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ContactUsPage()));
             },
             child: Text("Contact Us", style: TextStyle(color: Colors.white)),
           ),
@@ -110,11 +100,7 @@ class HomePage extends StatelessWidget {
                 children: [
                   Text(
                     "MAKEUP SALE",
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      fontStyle: FontStyle.italic,
-                    ),
+                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic),
                   ),
                   SizedBox(height: 10),
                   Padding(
@@ -123,10 +109,7 @@ class HomePage extends StatelessWidget {
                       "Discover the best deals on top makeup products!\n"
                       "Our exclusive sale offers up to 50% off on selected items.\n"
                       "Hurry, limited time offer. Upgrade your beauty routine today!",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -155,10 +138,7 @@ class HomePage extends StatelessWidget {
                       children: [
                         Text(
                           "Skin Care",
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                         ),
                         SizedBox(height: 10),
                         Text(
@@ -172,7 +152,6 @@ class HomePage extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(height: 40),
           ],
         ),
       ),
@@ -184,33 +163,16 @@ class HomePage extends StatelessWidget {
           children: [
             Text(
               "LuxeSkin & Beauty",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 10),
-            Text(
-              "Contact: +1 234 567 890",
-              style: TextStyle(color: Colors.white),
-            ),
+            Text("Contact: +1 234 567 890", style: TextStyle(color: Colors.white)),
             SizedBox(height: 10),
-            Text(
-              "Email: support@LuxeSkin.com",
-              style: TextStyle(color: Colors.white),
-            ),
-            
+            Text("Email: support@LuxeSkin.com", style: TextStyle(color: Colors.white)),
             SizedBox(height: 5),
-            Text(
-              "Privacy Policy | Terms of Service",
-              style: TextStyle(color: Colors.white),
-            ),
+            Text("Privacy Policy | Terms of Service", style: TextStyle(color: Colors.white)),
             SizedBox(height: 5),
-            Text(
-              "© 2025 All Rights Reserved",
-              style: TextStyle(color: Colors.white),
-            ),
+            Text("© 2025 All Rights Reserved", style: TextStyle(color: Colors.white)),
           ],
         ),
       ),
