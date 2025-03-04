@@ -42,7 +42,7 @@ class ProductPage extends StatelessWidget {
               itemBuilder: (context, index) {
                 var product = products[index];
                 String imageUrl = product['image'] ?? "https://via.placeholder.com/150";
-
+print(imageUrl);
                 return GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -53,6 +53,7 @@ class ProductPage extends StatelessWidget {
                           description: product['Description'] ?? "No Description",
                           price: product['Price'] ?? "0.00",
                           imageUrl: imageUrl,
+                          
                         ),
                       ),
                     );
