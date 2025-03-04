@@ -1,15 +1,29 @@
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'firebase_options.dart';
 import 'product_page.dart';
+import 'cart_page.dart';
+import 'checkout_page.dart';
+import 'auth.dart';
+import 'cart_provider.dart';
+import 'profile_page.dart';
 import 'about_us.dart';
 import 'contact_us.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(MyApp());
+  
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => CartProvider()),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -17,7 +31,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomePage(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => HomePage(),
+        '/product': (context) => ProductPage(),
+        '/cart': (context) => CartPage(),
+        '/checkout': (context) => CheckoutPage(),  // ✅ FIXED: CheckoutPage added
+        '/profile': (context) => ProfilePage(),
+        '/about': (context) => AboutUsPage(),
+        '/contact': (context) => ContactUsPage(),
+      },
     );
   }
 }
@@ -35,88 +58,60 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: Text(
-          "LuxeSkin & Beauty",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
+        title: Text("LuxeSkin & Beauty", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         actions: [
-          TextButton(
-            onPressed: () {},
-            child: Text("Home", style: TextStyle(color: Colors.white)),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => AboutUsPage()));
-            },
-            child: Text("About Us", style: TextStyle(color: Colors.white)),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => ProductPage()));
-            },
-            child: Text("Products", style: TextStyle(color: Colors.white)),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => ContactUsPage()));
-            },
-            child: Text("Contact Us", style: TextStyle(color: Colors.white)),
-          ),
-          IconButton(
-            icon: Icon(Icons.search, color: Colors.white),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: Icon(Icons.shopping_cart, color: Colors.white),
-            onPressed: () {},
-          ),
+          TextButton(onPressed: () => Navigator.pushNamed(context, '/about'), child: Text("About Us", style: TextStyle(color: Colors.white))),
+          TextButton(onPressed: () => Navigator.pushNamed(context, '/product'), child: Text("Products", style: TextStyle(color: Colors.white))),
+          TextButton(onPressed: () => Navigator.pushNamed(context, '/contact'), child: Text("Contact Us", style: TextStyle(color: Colors.white))),
+          IconButton(icon: Icon(Icons.shopping_cart, color: Colors.white), onPressed: () => Navigator.pushNamed(context, '/cart')),
         ],
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
             SizedBox(height: 10),
+
+            // SLIDER WITH BETTER SIZING & FIT
             CarouselSlider(
               options: CarouselOptions(
-                height: 280,
+                height: 360, // Increased height for better visibility
                 autoPlay: true,
                 enlargeCenterPage: true,
-                viewportFraction: 1.0,
+                viewportFraction: 0.95, // Slightly reduced to prevent edge cutting
+                autoPlayInterval: Duration(seconds: 3),
+                autoPlayAnimationDuration: Duration(milliseconds: 800),
               ),
               items: images.map((item) {
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.asset(
-                    item,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
+                return Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10), // Added margin for a clean look
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12), // Slightly rounded corners
+                    child: Image.asset(
+                      item,
+                      fit: BoxFit.cover, // Ensures the image fills the space properly
+                      width: double.infinity,
+                    ),
                   ),
                 );
               }).toList(),
             ),
+
             SizedBox(height: 30),
-            Center(
-              child: Column(
-                children: [
-                  Text(
-                    "MAKEUP SALE",
-                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic),
-                  ),
-                  SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: Text(
-                      "Discover the best deals on top makeup products!\n"
-                      "Our exclusive sale offers up to 50% off on selected items.\n"
-                      "Hurry, limited time offer. Upgrade your beauty routine today!",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
+
+            // BEAUTY SALE SECTION
+            Text("MAKEUP SALE", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Text(
+                "Discover the best deals on top makeup products! Up to 50% off on selected items.",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
               ),
             ),
+
             SizedBox(height: 40),
+
+            // SKIN CARE SECTION
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
@@ -127,7 +122,7 @@ class HomePage extends StatelessWidget {
                     child: Image.asset(
                       'assets/images/skin-care.jpg',
                       fit: BoxFit.cover,
-                      height: 200,
+                      height: 220, // Slightly increased for better balance
                     ),
                   ),
                   SizedBox(width: 20),
@@ -152,26 +147,24 @@ class HomePage extends StatelessWidget {
                 ],
               ),
             ),
+
+            SizedBox(height: 40),
           ],
         ),
       ),
+
+      // FOOTER SECTION
       bottomNavigationBar: Container(
         color: Colors.black,
         padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              "LuxeSkin & Beauty",
-              style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-            ),
+            Text("LuxeSkin & Beauty", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
             Text("Contact: +1 234 567 890", style: TextStyle(color: Colors.white)),
-            SizedBox(height: 10),
             Text("Email: support@LuxeSkin.com", style: TextStyle(color: Colors.white)),
-            SizedBox(height: 5),
             Text("Privacy Policy | Terms of Service", style: TextStyle(color: Colors.white)),
-            SizedBox(height: 5),
             Text("© 2025 All Rights Reserved", style: TextStyle(color: Colors.white)),
           ],
         ),

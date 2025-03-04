@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'cart_provider.dart';
+import 'auth.dart'; // Ensure this file has the Signup and Login screens
 
 class ProductDetailPage extends StatefulWidget {
-  final String title;
-  final String description;
-  final String price;
-  final String imageUrl;
+  final String title, description, imageUrl;
+  final double price;
 
   const ProductDetailPage({
     Key? key,
@@ -19,113 +21,81 @@ class ProductDetailPage extends StatefulWidget {
 }
 
 class _ProductDetailPageState extends State<ProductDetailPage> {
-  int quantity = 1; // Default quantity
-
-  void increaseQuantity() {
-    setState(() {
-      quantity++;
-    });
-  }
-
-  void decreaseQuantity() {
-    if (quantity > 1) {
-      setState(() {
-        quantity--;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title, style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.black,
-        iconTheme: IconThemeData(color: Colors.white),
-      ),
+      appBar: AppBar(title: Text(widget.title)),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Product Image on the Left
             Expanded(
               flex: 1,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  widget.imageUrl,
-                  width: double.infinity,
-                  height: 300,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Image.asset(
-                      'assets/placeholder.png',
-                      width: double.infinity,
-                      height: 300,
-                      fit: BoxFit.cover,
-                    );
-                  },
-                ),
-              ),
+              child: Image.network(widget.imageUrl, height: 300, fit: BoxFit.cover),
             ),
-            SizedBox(width: 20),
-
-            // Product Details on the Right
+            const SizedBox(width: 20),
             Expanded(
               flex: 1,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(widget.title, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 10),
+                  Text(widget.description, style: const TextStyle(fontSize: 16)),
+                  const SizedBox(height: 10),
                   Text(
-                    widget.title,
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    "\$${widget.price.toStringAsFixed(2)}",
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.green),
                   ),
-                  SizedBox(height: 10),
-                  Text(
-                    widget.description,
-                    style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                  ),
-                  SizedBox(height: 15),
-                  Text(
-                    "\$${widget.price}",
-                    style: TextStyle(fontSize: 22, color: Colors.red, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 20),
-
-                  // Quantity Selector
-                  Row(
-                    children: [
-                      IconButton(
-                        onPressed: decreaseQuantity,
-                        icon: Icon(Icons.remove_circle_outline, color: Colors.black),
-                      ),
-                      Text(
-                        quantity.toString(),
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      IconButton(
-                        onPressed: increaseQuantity,
-                        icon: Icon(Icons.add_circle_outline, color: Colors.black),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 20),
-
-                  // Add to Cart Button
-                  Center(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        // Add to cart logic here
-                      },
-                      icon: Icon(Icons.shopping_cart),
-                      label: Text("Add to Cart"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                      ),
-                    ),
-                  ),
+                  const SizedBox(height: 20),
+                  FirebaseAuth.instance.currentUser == null
+                      ? ElevatedButton.icon(
+                          onPressed: () {
+                            // Redirect to Signup/Login page if not logged in
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const Signup()), // Update as per your Signup/Login page
+                            );
+                          },
+                          icon: const Icon(Icons.shopping_cart),
+                          label: const Text("Add to Cart"),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                          ),
+                        )
+                      : Consumer<CartProvider>(
+                          builder: (context, cartProvider, child) {
+                            final index = cartProvider.cartItems.indexWhere((item) => item.title == widget.title);
+                            return index == -1
+                                ? ElevatedButton.icon(
+                                    onPressed: () {
+                                      cartProvider.addToCart(widget.title, widget.price, widget.imageUrl);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text("Item added to cart!")),
+                                      );
+                                    },
+                                    icon: const Icon(Icons.shopping_cart),
+                                    label: const Text("Add to Cart"),
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                                    ),
+                                  )
+                                : Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.remove),
+                                        onPressed: () => cartProvider.decreaseQuantity(index),
+                                      ),
+                                      Text("${cartProvider.cartItems[index].quantity}"),
+                                      IconButton(
+                                        icon: const Icon(Icons.add),
+                                        onPressed: () => cartProvider.increaseQuantity(index),
+                                      ),
+                                    ],
+                                  );
+                          },
+                        ),
                 ],
               ),
             ),
