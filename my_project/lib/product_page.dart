@@ -9,11 +9,11 @@ class ProductPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           "Products",
-          style: TextStyle(color: Colors.white), // Title in white
+          style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.black,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white), // Back arrow in white
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -33,10 +33,10 @@ class ProductPage extends StatelessWidget {
             return GridView.builder(
               padding: EdgeInsets.all(8),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
+                crossAxisCount: 3, // 3 cards per row
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
-                childAspectRatio: 0.8,
+                childAspectRatio: 0.9, // Adjusted for normal card size
               ),
               itemCount: products.length,
               itemBuilder: (context, index) {
@@ -58,23 +58,35 @@ class ProductPage extends StatelessWidget {
                     );
                   },
                   child: Card(
-                    elevation: 5,
+                    elevation: 4,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center, // Center content
                       children: [
                         Expanded(
                           child: ClipRRect(
                             borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-                            child: Image.network(imageUrl, fit: BoxFit.cover, width: double.infinity),
+                            child: Image.network(
+                              imageUrl,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                            ),
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.all(8.0),
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           child: Column(
                             children: [
-                              Text(product['Title'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                              SizedBox(height: 5),
-                              Text("\$${product['Price']}", style: TextStyle(fontSize: 14, color: Colors.red, fontWeight: FontWeight.bold)),
+                              Text(
+                                product['Title'],
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                "\$${product['Price']}",
+                                style: TextStyle(fontSize: 12, color: Colors.red, fontWeight: FontWeight.bold),
+                              ),
                             ],
                           ),
                         ),

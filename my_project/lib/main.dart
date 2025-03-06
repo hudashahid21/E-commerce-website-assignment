@@ -1,16 +1,17 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'firebase_options.dart';
+import 'home_page.dart';
 import 'product_page.dart';
 import 'cart_page.dart';
 import 'checkout_page.dart';
-import 'auth.dart';
-import 'cart_provider.dart';
 import 'profile_page.dart';
 import 'about_us.dart';
 import 'contact_us.dart';
+import 'signup.dart';
+import 'login.dart';
+import 'cart_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,139 +37,13 @@ class MyApp extends StatelessWidget {
         '/': (context) => HomePage(),
         '/product': (context) => ProductPage(),
         '/cart': (context) => CartPage(),
-        '/checkout': (context) => CheckoutPage(),  // ✅ FIXED: CheckoutPage added
+        '/checkout': (context) => CheckoutPage(),
         '/profile': (context) => ProfilePage(),
         '/about': (context) => AboutUsPage(),
         '/contact': (context) => ContactUsPage(),
+        '/signup': (context) => SignupPage(),
+        '/login': (context) => LoginPage(),
       },
-    );
-  }
-}
-
-class HomePage extends StatelessWidget {
-  final List<String> images = [
-    'assets/images/sale.jpg',
-    'assets/images/beauty.jpg',
-    'assets/images/nykaa.png',
-    'assets/images/skin.jpg',
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: Text("LuxeSkin & Beauty", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        actions: [
-          TextButton(onPressed: () => Navigator.pushNamed(context, '/about'), child: Text("About Us", style: TextStyle(color: Colors.white))),
-          TextButton(onPressed: () => Navigator.pushNamed(context, '/product'), child: Text("Products", style: TextStyle(color: Colors.white))),
-          TextButton(onPressed: () => Navigator.pushNamed(context, '/contact'), child: Text("Contact Us", style: TextStyle(color: Colors.white))),
-          IconButton(icon: Icon(Icons.shopping_cart, color: Colors.white), onPressed: () => Navigator.pushNamed(context, '/cart')),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(height: 10),
-
-            // SLIDER WITH BETTER SIZING & FIT
-            CarouselSlider(
-              options: CarouselOptions(
-                height: 360, // Increased height for better visibility
-                autoPlay: true,
-                enlargeCenterPage: true,
-                viewportFraction: 0.95, // Slightly reduced to prevent edge cutting
-                autoPlayInterval: Duration(seconds: 3),
-                autoPlayAnimationDuration: Duration(milliseconds: 800),
-              ),
-              items: images.map((item) {
-                return Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10), // Added margin for a clean look
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12), // Slightly rounded corners
-                    child: Image.asset(
-                      item,
-                      fit: BoxFit.cover, // Ensures the image fills the space properly
-                      width: double.infinity,
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-
-            SizedBox(height: 30),
-
-            // BEAUTY SALE SECTION
-            Text("MAKEUP SALE", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic)),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Text(
-                "Discover the best deals on top makeup products! Up to 50% off on selected items.",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-            ),
-
-            SizedBox(height: 40),
-
-            // SKIN CARE SECTION
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Image.asset(
-                      'assets/images/skin-care.jpg',
-                      fit: BoxFit.cover,
-                      height: 220, // Slightly increased for better balance
-                    ),
-                  ),
-                  SizedBox(width: 20),
-                  Expanded(
-                    flex: 1,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Skin Care",
-                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          "Explore our range of skin care products designed to rejuvenate and nourish your skin. "
-                          "From cleansers to moisturizers, find what suits your skin type best.",
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            SizedBox(height: 40),
-          ],
-        ),
-      ),
-
-      // FOOTER SECTION
-      bottomNavigationBar: Container(
-        color: Colors.black,
-        padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text("LuxeSkin & Beauty", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
-            Text("Contact: +1 234 567 890", style: TextStyle(color: Colors.white)),
-            Text("Email: support@LuxeSkin.com", style: TextStyle(color: Colors.white)),
-            Text("Privacy Policy | Terms of Service", style: TextStyle(color: Colors.white)),
-            Text("© 2025 All Rights Reserved", style: TextStyle(color: Colors.white)),
-          ],
-        ),
-      ),
     );
   }
 }
