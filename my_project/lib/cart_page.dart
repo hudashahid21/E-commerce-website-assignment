@@ -24,7 +24,7 @@ class CartPage extends StatelessWidget {
                         child: ListTile(
                           leading: Image.network(item.imageUrl, width: 50, height: 50, fit: BoxFit.cover),
                           title: Text(item.title),
-                          subtitle: Text("Price: \$${item.price.toStringAsFixed(2)}"),
+                           subtitle: Text("Price: \$${item.price.toStringAsFixed(2)}"),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
