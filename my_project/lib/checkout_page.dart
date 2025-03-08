@@ -1,43 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'cart_provider.dart';
 
 class CheckoutPage extends StatelessWidget {
+  final double totalPrice;
+
+  CheckoutPage({required this.totalPrice});
+
   @override
   Widget build(BuildContext context) {
-    final cartProvider = Provider.of<CartProvider>(context);
-
     return Scaffold(
-      appBar: AppBar(title: Text("Checkout")),
-      body: Padding(
-        padding: EdgeInsets.all(16),
+      appBar: AppBar(title: Text('Checkout')),
+      body: Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Expanded(
-              child: ListView(
-                children: cartProvider.cartItems.map((item) {
-                  return ListTile(
-                    title: Text(item.title),
-                    subtitle: Text("\$${item.price.toStringAsFixed(2)} x ${item.quantity}"),
-                  );
-                }).toList(),
-              ),
-            ),
-            Divider(),
-            Text(
-              "Total: \$${cartProvider.getTotalPrice().toStringAsFixed(2)}",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
+            Text('Total Bill: \$${totalPrice.toStringAsFixed(2)}',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                cartProvider.clearCart();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Order placed successfully!")),
-                );
-                Navigator.pop(context);
+                Navigator.pop(context); // ✅ Back ho jaye, cart delete nahi hoga!
               },
-              child: Text("Confirm Order"),
+              child: Text('Back to Cart'),
             ),
           ],
         ),

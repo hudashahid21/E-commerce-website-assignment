@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
         '/': (context) => HomePage(),
         '/product': (context) => ProductPage(),
         '/cart': (context) => CartPage(),
-        '/checkout': (context) => CheckoutPage(),
+         '/checkout': (context) => CheckoutPage(totalPrice: 0.0), // Default value set karein
         '/profile': (context) => ProfilePage(),
         '/about': (context) => AboutUsPage(),
         '/contact': (context) => ContactUsPage(),
