@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'cart_provider.dart';
 
 class CheckoutPage extends StatelessWidget {
@@ -7,7 +8,29 @@ class CheckoutPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final cartProvider = Provider.of<CartProvider>(context);
     final cartItems = cartProvider.cartItems.values.toList();
-    final totalPrice = cartProvider.totalPrice;
+    final double totalPrice = cartProvider.totalPrice;
+
+    void placeOrder() async {
+      if (cartItems.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Cart is empty!")));
+        return;
+      }
+
+      try {
+        await FirebaseFirestore.instance.collection('orders').add({
+          'items': cartItems.map((item) => item.toMap()).toList(),
+          'totalPrice': totalPrice,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+
+        cartProvider.clearCart();
+
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Order Placed Successfully!")));
+        Navigator.pop(context);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error placing order!")));
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(title: Text('Checkout')),
@@ -32,9 +55,7 @@ class CheckoutPage extends StatelessWidget {
             Text('Total: \$${totalPrice.toStringAsFixed(2)}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                // TODO: Add order placement logic
-              },
+              onPressed: placeOrder,
               child: Text('Place Order'),
             ),
           ],
