@@ -20,7 +20,7 @@ class ProductDetailPage extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => LoginPage(redirectTo: 'product_detail', productTitle: title), // ✅ Fixed
+        builder: (context) => LoginPage(redirectTo: 'product_detail', productTitle: title),
       ),
     ).then((value) {
       if (value == title) {
@@ -51,8 +51,16 @@ class ProductDetailPage extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ✅ Image on Left Side
-            Image.network(imageUrl, width: 200, height: 200, fit: BoxFit.cover),
+            // ✅ Larger Image
+            Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 5)],
+              ),
+              child: Image.network(imageUrl, fit: BoxFit.cover),
+            ),
 
             SizedBox(width: 20),
 
@@ -61,13 +69,13 @@ class ProductDetailPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  Text(title, style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
                   SizedBox(height: 10),
                   Text(description, style: TextStyle(fontSize: 16, color: Colors.grey)),
                   SizedBox(height: 10),
                   Text("\$${price.toStringAsFixed(2)}", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green)),
                   SizedBox(height: 20),
-                  
+
                   // ✅ "Add to Cart" Button (Login Check)
                   user == null
                       ? ElevatedButton.icon(
@@ -82,7 +90,13 @@ class ProductDetailPage extends StatelessWidget {
                               return ElevatedButton.icon(
                                 onPressed: () {
                                   cartProvider.addToCart(
-                                    CartItem(title: title, price: price, imageUrl: imageUrl, quantity: 1),
+                                    CartItem(
+                                      id: title, // ✅ FIX: Added 'id'
+                                      title: title,
+                                      price: price,
+                                      imageUrl: imageUrl,
+                                      quantity: 1,
+                                    ),
                                   );
                                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Item added to cart!")));
                                 },
@@ -92,9 +106,15 @@ class ProductDetailPage extends StatelessWidget {
                             }
                             return Row(
                               children: [
-                                IconButton(icon: Icon(Icons.remove), onPressed: () => cartProvider.decreaseQuantity(cartItem)),
+                                IconButton(
+                                  icon: Icon(Icons.remove),
+                                  onPressed: () => cartProvider.decreaseQuantity(cartItem.id), // ✅ FIX: Pass 'id' instead of cartItem
+                                ),
                                 Text("${cartItem.quantity}", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                IconButton(icon: Icon(Icons.add), onPressed: () => cartProvider.increaseQuantity(cartItem)),
+                                IconButton(
+                                  icon: Icon(Icons.add),
+                                  onPressed: () => cartProvider.increaseQuantity(cartItem.id), // ✅ FIX: Pass 'id' instead of cartItem
+                                ),
                               ],
                             );
                           },

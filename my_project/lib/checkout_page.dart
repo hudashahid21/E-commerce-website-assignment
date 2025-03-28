@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'cart_provider.dart';
 
 class CheckoutPage extends StatelessWidget {
-  final List<CartItem> cartItems;
-  final double totalBill;
-
-  const CheckoutPage({Key? key, required this.cartItems, required this.totalBill}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
+    final cartProvider = Provider.of<CartProvider>(context);
+    final cartItems = cartProvider.cartItems.values.toList();
+    final totalPrice = cartProvider.totalPrice;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Checkout')),
+      appBar: AppBar(title: Text('Checkout')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -21,24 +21,21 @@ class CheckoutPage extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final item = cartItems[index];
                   return ListTile(
-                    leading: Image.network(item.imageUrl, width: 50),
+                    leading: Image.network(item.imageUrl, width: 50, height: 50),
                     title: Text(item.title),
-                    subtitle: Text("\$${item.price} x ${item.quantity}"),
-                    trailing: Text("\$${(item.price * item.quantity).toStringAsFixed(2)}"),
+                    subtitle: Text('Quantity: ${item.quantity}'),
+                    trailing: Text('\$${(item.price * item.quantity).toStringAsFixed(2)}'),
                   );
                 },
               ),
             ),
-            Text("Total: \$${totalBill.toStringAsFixed(2)}", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
+            Text('Total: \$${totalPrice.toStringAsFixed(2)}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Handle order placement logic here
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Order Placed Successfully!")),
-                );
+                // TODO: Add order placement logic
               },
-              child: const Text("Place Order"),
+              child: Text('Place Order'),
             ),
           ],
         ),

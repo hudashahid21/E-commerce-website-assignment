@@ -1,81 +1,77 @@
 import 'package:flutter/material.dart';
+import 'package:my_project/checkout_page.dart';
 import 'package:provider/provider.dart';
 import 'cart_provider.dart';
-import 'checkout_page.dart';
+
 
 class CartPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cartProvider = Provider.of<CartProvider>(context);
-    final cartItems = cartProvider.items.values.toList();
+    final cartItems = cartProvider.cartItems.values.toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Cart')),
-      body: cartItems.isEmpty
-          ? const Center(child: Text("Your cart is empty"))
-          : Column(
+      appBar: AppBar(title: Text("Shopping Cart")),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: cartItems.length,
+              itemBuilder: (context, index) {
+                final item = cartItems[index];
+                return ListTile(
+                  leading: Image.network(item.imageUrl, width: 50, height: 50),
+                  title: Text(item.title),
+                  subtitle: Text("Price: \$${item.price.toStringAsFixed(2)}"),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.remove),
+                        onPressed: () => cartProvider.decreaseQuantity(item.id),
+                      ),
+                      Text("${item.quantity}", style: TextStyle(fontSize: 18)),
+                      IconButton(
+                        icon: Icon(Icons.add),
+                        onPressed: () => cartProvider.increaseQuantity(item.id),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => cartProvider.removeItem(item.id), // ✅ DELETE BUTTON
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
               children: [
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: cartItems.length,
-                    itemBuilder: (context, index) {
-                      final item = cartItems[index];
-                      return Card(
-                        margin: const EdgeInsets.all(10),
-                        child: ListTile(
-                          leading: Image.network(item.imageUrl, width: 50),
-                          title: Text(item.title),
-                          subtitle: Text("\$${item.price}"),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.remove),
-                                onPressed: () {
-                                  cartProvider.decreaseQuantity(item);
-                                },
-                              ),
-                              Text("${item.quantity}"),
-                              IconButton(
-                                icon: const Icon(Icons.add),
-                                onPressed: () {
-                                  cartProvider.increaseQuantity(item);
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () {
-                                  cartProvider.removeFromCart(item);
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                Text(
+                  "Total: \$${cartProvider.totalPrice.toStringAsFixed(2)}",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (cartItems.isNotEmpty) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CheckoutPage(
-                              cartItems: cartItems,
-                              totalBill: cartProvider.totalPrice,
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                    child: const Text("Proceed to Checkout"),
-                  ),
+                SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () {
+                    if (cartItems.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Cart is empty!")));
+                      return;
+                    }
+                    Navigator.push(
+                           context,
+                             MaterialPageRoute(builder: (context) => CheckoutPage()),
+);
+                  },
+                  child: Text("Proceed to Checkout"),
                 ),
               ],
             ),
+          ),
+        ],
+      ),
     );
   }
 }

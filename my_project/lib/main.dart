@@ -13,7 +13,6 @@ import 'login.dart';
 import 'cart_provider.dart';
 import 'checkout_page.dart';
 import 'order_list_page.dart';
-import 'product_detail_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,21 +35,18 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
-      routes: {
-        '/': (context) => HomePage(),
-        '/product': (context) => ProductPage(),
-        '/cart': (context) => CartPage(),
-        '/profile': (context) => ProfilePage(),
-        '/about': (context) => AboutUsPage(),
-        '/contact': (context) => ContactUsPage(),
-        '/signup': (context) => SignUpPage(),
-        '/login': (context) => LoginPage(redirectTo: 'product_detail'),
-        '/checkout': (context) => CheckoutPage(
-          cartItems: Provider.of<CartProvider>(context, listen: false).items.values.toList(),
-          totalBill: Provider.of<CartProvider>(context, listen: false).totalPrice,
-        ),
-        '/orders': (context) => OrderListPage(),
-      },
+         routes: {
+      '/': (context) => HomePage(),
+      '/product': (context) => ProductPage(),
+      '/cart': (context) => CartPage(),
+      '/profile': (context) => ProfilePage(),
+      '/about': (context) => AboutUsPage(),
+      '/contact': (context) => ContactUsPage(),
+      '/signup': (context) => SignUpPage(),
+      '/login': (context) => LoginPage(redirectTo: 'product_detail'),
+      '/checkout': (context) => CheckoutPage(),
+      '/orders': (context) => OrderListPage(), // ✅ Corrected
+    },
     );
   }
 }
