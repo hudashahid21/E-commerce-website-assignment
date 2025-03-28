@@ -1,26 +1,44 @@
 import 'package:flutter/material.dart';
+import 'cart_provider.dart';
 
 class CheckoutPage extends StatelessWidget {
-  final double totalPrice;
+  final List<CartItem> cartItems;
+  final double totalBill;
 
-  CheckoutPage({required this.totalPrice});
+  const CheckoutPage({Key? key, required this.cartItems, required this.totalBill}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Checkout')),
-      body: Center(
+      appBar: AppBar(title: const Text('Checkout')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Total Bill: \$${totalPrice.toStringAsFixed(2)}',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            SizedBox(height: 20),
+            Expanded(
+              child: ListView.builder(
+                itemCount: cartItems.length,
+                itemBuilder: (context, index) {
+                  final item = cartItems[index];
+                  return ListTile(
+                    leading: Image.network(item.imageUrl, width: 50),
+                    title: Text(item.title),
+                    subtitle: Text("\$${item.price} x ${item.quantity}"),
+                    trailing: Text("\$${(item.price * item.quantity).toStringAsFixed(2)}"),
+                  );
+                },
+              ),
+            ),
+            Text("Total: \$${totalBill.toStringAsFixed(2)}", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
             ElevatedButton(
               onPressed: () {
-                Navigator.pop(context); // ✅ Back ho jaye, cart delete nahi hoga!
+                // Handle order placement logic here
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Order Placed Successfully!")),
+                );
               },
-              child: Text('Back to Cart'),
+              child: const Text("Place Order"),
             ),
           ],
         ),

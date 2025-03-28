@@ -33,16 +33,15 @@ class ProductPage extends StatelessWidget {
             return GridView.builder(
               padding: EdgeInsets.all(8),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3, // 3 cards per row
+                crossAxisCount: 3,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
-                childAspectRatio: 0.9, // Adjusted for normal card size
+                childAspectRatio: 0.9,
               ),
               itemCount: products.length,
               itemBuilder: (context, index) {
                 var product = products[index];
                 String imageUrl = product['image'] ?? "https://via.placeholder.com/150";
-print(imageUrl);
                 return GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -51,9 +50,8 @@ print(imageUrl);
                         builder: (context) => ProductDetailPage(
                           title: product['Title'] ?? "No Title",
                           description: product['Description'] ?? "No Description",
-                          price: product['Price'] ?? "0.00",
+                          price: double.tryParse(product['Price'].toString()) ?? 0.0,
                           imageUrl: imageUrl,
-                          
                         ),
                       ),
                     );
@@ -62,7 +60,7 @@ print(imageUrl);
                     elevation: 4,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center, // Center content
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Expanded(
                           child: ClipRRect(

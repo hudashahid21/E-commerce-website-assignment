@@ -1,65 +1,51 @@
 import 'package:flutter/material.dart';
 
 class CartItem {
-  final String title;
+  final String title, imageUrl;
   final double price;
-  final String imageUrl;
   int quantity;
 
-  CartItem({
-    required this.title,
-    required this.price,
-    required this.imageUrl,
-    this.quantity = 1,
-  });
+  CartItem({required this.title, required this.imageUrl, required this.price, required this.quantity});
 }
 
 class CartProvider extends ChangeNotifier {
-  final List<CartItem> _cartItems = [];
+  final Map<String, CartItem> _items = {};
 
-  List<CartItem> get cartItems => _cartItems;
+  Map<String, CartItem> get items => _items;
 
-  void addToCart(String title, double price, String imageUrl) {
-    var existingItem =
-        _cartItems.firstWhere((item) => item.title == title, orElse: () => CartItem(title: '', price: 0, imageUrl: ''));
+  double get totalPrice {
+    return _items.values.fold(0, (sum, item) => sum + (item.price * item.quantity));
+  }
 
-    if (existingItem.title.isNotEmpty) {
-      existingItem.quantity++;
+  void addToCart(CartItem item) {
+    if (_items.containsKey(item.title)) {
+      _items[item.title]!.quantity += 1;
     } else {
-      _cartItems.add(CartItem(title: title, price: price, imageUrl: imageUrl));
+      _items[item.title] = item;
     }
     notifyListeners();
   }
 
-  void removeFromCart(int index) {
-    _cartItems.removeAt(index);
+  void removeFromCart(CartItem item) {
+    _items.remove(item.title);
     notifyListeners();
   }
 
-  void increaseQuantity(int index) {
-    _cartItems[index].quantity++;
+  void increaseQuantity(CartItem item) {
+    _items[item.title]!.quantity += 1;
     notifyListeners();
   }
 
-  void decreaseQuantity(int index) {
-    if (_cartItems[index].quantity > 1) {
-      _cartItems[index].quantity--;
+  void decreaseQuantity(CartItem item) {
+    if (_items[item.title]!.quantity > 1) {
+      _items[item.title]!.quantity -= 1;
     } else {
-      _cartItems.removeAt(index);
+      _items.remove(item.title);
     }
     notifyListeners();
   }
 
-  double getTotalPrice() {
-    return _cartItems.fold(0, (total, item) => total + (item.price * item.quantity));
-  }
-
-  int getTotalItems() {
-    return _cartItems.fold(0, (total, item) => total + item.quantity);
-  }
-
-  void clearCart() {
-    _cartItems.clear();
-    notifyListeners();
+  CartItem? getCartItem(String title) {
+    return _items[title];
   }
 }

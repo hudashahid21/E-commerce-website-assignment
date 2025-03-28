@@ -3,56 +3,40 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'login.dart';
 
-class SignupPage extends StatefulWidget {
-  final String? redirectTo;
-  final String? productTitle;
-
-  SignupPage({this.redirectTo, this.productTitle});
-
+class SignUpPage extends StatefulWidget {
   @override
-  _SignupPageState createState() => _SignupPageState();
+  _SignUpPageState createState() => _SignUpPageState();
 }
 
-class _SignupPageState extends State<SignupPage> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+class _SignUpPageState extends State<SignUpPage> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
 
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  bool _isLoading = false;
-
-  Future<void> _signup() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => _isLoading = true);
+  void signUp() async {
     try {
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
       );
 
-      await userCredential.user!.updateDisplayName(_usernameController.text.trim());
-
-      await _firestore.collection('users').doc(userCredential.user!.uid).set({
-        'username': _usernameController.text.trim(),
-        'email': _emailController.text.trim(),
+      await FirebaseFirestore.instance.collection('Users').doc(userCredential.user!.uid).set({
+        'email': emailController.text.trim(),
+        'username': usernameController.text.trim(),
+        'role': 'user',
       });
 
-      if (widget.redirectTo == "product_detail") {
-        Navigator.pop(context, true);
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => LoginPage(redirectTo: widget.redirectTo, productTitle: widget.productTitle)),
-        );
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = "Signup failed. Please try again.";
+      if (e.code == 'email-already-in-use') {
+        errorMessage = "This email address is already in use in another account.";
+      } else if (e.code == 'weak-password') {
+        errorMessage = "The password provided is too weak.";
+      } else if (e.code == 'invalid-email') {
+        errorMessage = "The email address is not valid.";
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Signup Error: ${e.toString()}"), backgroundColor: Colors.red),
-      );
-    } finally {
-      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorMessage)));
     }
   }
 
@@ -62,86 +46,66 @@ class _SignupPageState extends State<SignupPage> {
       backgroundColor: Colors.grey[200],
       body: Center(
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(24),
-          child: Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-            elevation: 5,
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child: Form(
-                key: _formKey,
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Card(
+              elevation: 5,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text("Sign Up", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.deepPurple)),
+                    Text(
+                      "Sign Up",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blueAccent),
+                    ),
                     SizedBox(height: 20),
-                    TextFormField(
-                      controller: _usernameController,
+                    TextField(
+                      controller: usernameController,
                       decoration: InputDecoration(
                         labelText: "Username",
-                        prefixIcon: Icon(Icons.person, color: Colors.deepPurple),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-                        filled: true,
-                        fillColor: Colors.white,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        prefixIcon: Icon(Icons.person),
                       ),
-                      validator: (value) => value!.isEmpty ? "Enter a username" : null,
                     ),
-                    SizedBox(height: 10),
-                    TextFormField(
-                      controller: _emailController,
+                    SizedBox(height: 15),
+                    TextField(
+                      controller: emailController,
                       decoration: InputDecoration(
                         labelText: "Email",
-                        prefixIcon: Icon(Icons.email, color: Colors.deepPurple),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-                        filled: true,
-                        fillColor: Colors.white,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        prefixIcon: Icon(Icons.email),
                       ),
-                      validator: (value) => !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value!) ? "Enter a valid email" : null,
                     ),
-                    SizedBox(height: 10),
-                    TextFormField(
-                      controller: _passwordController,
+                    SizedBox(height: 15),
+                    TextField(
+                      controller: passwordController,
                       obscureText: true,
                       decoration: InputDecoration(
                         labelText: "Password",
-                        prefixIcon: Icon(Icons.lock, color: Colors.deepPurple),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-                        filled: true,
-                        fillColor: Colors.white,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        prefixIcon: Icon(Icons.lock),
                       ),
-                      validator: (value) => value!.length < 6 ? "Password must be 6+ characters" : null,
                     ),
                     SizedBox(height: 20),
-                    _isLoading
-                        ? CircularProgressIndicator()
-                        : Container(
-                            width: double.infinity,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [Colors.deepPurple, Colors.purpleAccent],
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
-                              ),
-                              borderRadius: BorderRadius.circular(15),
-                              boxShadow: [BoxShadow(color: Colors.deepPurple.withOpacity(0.3), blurRadius: 8, offset: Offset(0, 4))],
-                            ),
-                            child: ElevatedButton(
-                              onPressed: _signup,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                shadowColor: Colors.transparent,
-                              ),
-                              child: Text("Sign Up", style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
-                            ),
-                          ),
-                    SizedBox(height: 10),
-                    TextButton(
-                      onPressed: () => Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => LoginPage(redirectTo: widget.redirectTo, productTitle: widget.productTitle)),
+                    ElevatedButton(
+                      onPressed: signUp,
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        backgroundColor: Colors.blueAccent,
                       ),
-                      child: Text("Already have an account? Login", style: TextStyle(fontSize: 16, color: Colors.deepPurple, fontWeight: FontWeight.bold)),
+                      child: Text("Sign Up", style: TextStyle(fontSize: 18, color: Colors.white)),
+                    ),
+                    SizedBox(height: 15),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+                      },
+                      child: Text("Already have an account? Login", style: TextStyle(color: Colors.blueAccent, fontSize: 16)),
                     ),
                   ],
                 ),

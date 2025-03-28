@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:my_project/signup.dart';
 import 'package:provider/provider.dart';
 import 'cart_provider.dart';
+import 'login.dart';
 
-class ProductDetailPage extends StatefulWidget {
+class ProductDetailPage extends StatelessWidget {
   final String title, description, imageUrl;
   final double price;
 
@@ -16,126 +16,87 @@ class ProductDetailPage extends StatefulWidget {
     required this.imageUrl,
   }) : super(key: key);
 
-  @override
-  _ProductDetailPageState createState() => _ProductDetailPageState();
-}
+  void navigateToLogin(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LoginPage(redirectTo: 'product_detail', productTitle: title), // ✅ Fixed
+      ),
+    ).then((value) {
+      if (value == title) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailPage(
+              title: title,
+              description: description,
+              price: price,
+              imageUrl: imageUrl,
+            ),
+          ),
+        );
+      }
+    });
+  }
 
-class _ProductDetailPageState extends State<ProductDetailPage> {
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    final cartProvider = Provider.of<CartProvider>(context);
+
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      appBar: AppBar(title: Text(title)),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ✅ Product Image with Adjusted Dimensions
-            Card(
-              elevation: 5,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  width: MediaQuery.of(context).size.width * 0.38, // 🔥 Slightly Wider
-                  height: 500, // 🔥 Increased Height for Balance
-                  child: Image.network(
-                    widget.imageUrl,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 25), // 🔥 Extra Space for Better Separation
+            // ✅ Image on Left Side
+            Image.network(imageUrl, width: 200, height: 200, fit: BoxFit.cover),
 
-            // ✅ Right Side (Details)
+            SizedBox(width: 20),
+
+            // ✅ Product Details on Right Side
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center, // 🔥 Center Align Content
                 children: [
-                  Text(
-                    widget.title,
-                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // ✅ Description with Wrapping
-                  Text(
-                    widget.description,
-                    style: const TextStyle(fontSize: 17, color: Colors.grey),
-                    maxLines: 5, // 🔥 Prevent Overflow
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 20),
-
-                  // ✅ Price Aligned Neatly
-                  Text(
-                    "\$${widget.price.toStringAsFixed(2)}",
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green),
-                  ),
-                  const SizedBox(height: 30),
-
-                  // ✅ Cart Button or Quantity Adjuster (Properly Positioned)
-                  FirebaseAuth.instance.currentUser == null
-                      ? SizedBox(
-                          width: 200, // 🔥 Proper Width for Better UI
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              // Redirect to Signup/Login page if not logged in
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => SignupPage()),
-                              );
-                            },
-                            icon: const Icon(Icons.shopping_cart),
-                            label: const Text("Add to Cart"),
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              textStyle: const TextStyle(fontSize: 18),
-                            ),
-                          ),
+                  Text(title, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 10),
+                  Text(description, style: TextStyle(fontSize: 16, color: Colors.grey)),
+                  SizedBox(height: 10),
+                  Text("\$${price.toStringAsFixed(2)}", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green)),
+                  SizedBox(height: 20),
+                  
+                  // ✅ "Add to Cart" Button (Login Check)
+                  user == null
+                      ? ElevatedButton.icon(
+                          onPressed: () => navigateToLogin(context),
+                          icon: Icon(Icons.shopping_cart),
+                          label: Text("Add to Cart"),
                         )
                       : Consumer<CartProvider>(
                           builder: (context, cartProvider, child) {
-                            final index = cartProvider.cartItems.indexWhere((item) => item.title == widget.title);
-                            return index == -1
-                                ? SizedBox(
-                                    width: 200, // 🔥 Keep Width Consistent
-                                    child: ElevatedButton.icon(
-                                      onPressed: () {
-                                        cartProvider.addToCart(widget.title, widget.price, widget.imageUrl);
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text("Item added to cart!")),
-                                        );
-                                      },
-                                      icon: const Icon(Icons.shopping_cart),
-                                      label: const Text("Add to Cart"),
-                                      style: ElevatedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(vertical: 14),
-                                        textStyle: const TextStyle(fontSize: 18),
-                                      ),
-                                    ),
-                                  )
-                                : Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.remove),
-                                        onPressed: () => cartProvider.decreaseQuantity(index),
-                                      ),
-                                      Text(
-                                        "${cartProvider.cartItems[index].quantity}",
-                                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.add),
-                                        onPressed: () => cartProvider.increaseQuantity(index),
-                                      ),
-                                    ],
+                            final cartItem = cartProvider.getCartItem(title);
+                            if (cartItem == null) {
+                              return ElevatedButton.icon(
+                                onPressed: () {
+                                  cartProvider.addToCart(
+                                    CartItem(title: title, price: price, imageUrl: imageUrl, quantity: 1),
                                   );
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Item added to cart!")));
+                                },
+                                icon: Icon(Icons.shopping_cart),
+                                label: Text("Add to Cart"),
+                              );
+                            }
+                            return Row(
+                              children: [
+                                IconButton(icon: Icon(Icons.remove), onPressed: () => cartProvider.decreaseQuantity(cartItem)),
+                                Text("${cartItem.quantity}", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                IconButton(icon: Icon(Icons.add), onPressed: () => cartProvider.increaseQuantity(cartItem)),
+                              ],
+                            );
                           },
                         ),
                 ],

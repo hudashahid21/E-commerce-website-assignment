@@ -1,30 +1,77 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:my_project/main.dart';
+import 'custom_button.dart';
+import 'custom_card.dart';
+import 'custom_textfield.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  group('CustomTextField Tests', () {
+    testWidgets('Should display the text field with label', (WidgetTester tester) async {
+      final controller = TextEditingController();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CustomTextField(
+              controller: controller,
+              label: 'Email',
+              icon: Icons.email,
+            ),
+          ),
+        ),
+      );
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+      // Check if the label 'Email' exists
+      expect(find.text('Email'), findsOneWidget);
+      expect(find.byIcon(Icons.email), findsOneWidget);
+      expect(find.byType(TextField), findsOneWidget);
+    });
+  });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  group('CustomButton Tests', () {
+    testWidgets('Should trigger onPressed when tapped', (WidgetTester tester) async {
+      bool pressed = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CustomButton(
+              text: 'Login',
+              onPressed: () {
+                pressed = true;
+              },
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Login'), findsOneWidget);
+
+      await tester.tap(find.text('Login'));
+      await tester.pump();
+
+      expect(pressed, isTrue);
+    });
+  });
+
+  group('CustomCard Tests', () {
+    testWidgets('Should display product details', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CustomCard(
+              title: 'Test Product',
+              price: '\$20',
+              imageUrl: 'https://via.placeholder.com/150',
+              onTap: () {},
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Test Product'), findsOneWidget);
+      expect(find.text('\$20'), findsOneWidget);
+      expect(find.byType(Image, skipOffstage: false), findsOneWidget);
+    });
   });
 }

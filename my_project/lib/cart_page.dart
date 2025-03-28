@@ -1,74 +1,81 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+import 'cart_provider.dart';
 import 'checkout_page.dart';
 
-class CartPage extends StatefulWidget {
-  @override
-  _CartPageState createState() => _CartPageState();
-}
-
-class _CartPageState extends State<CartPage> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  double totalPrice = 0.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _calculateTotalPrice();
-  }
-
-  void _calculateTotalPrice() async {
-    QuerySnapshot cartItems = await _firestore.collection('cart').get();
-    double total = 0.0;
-    for (var doc in cartItems.docs) {
-      total += (doc['price'] * doc['quantity']);
-    }
-    setState(() {
-      totalPrice = total;
-    });
-  }
-
+class CartPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Cart')),
-      body: Column(
-        children: [
-          Expanded(
-            child: StreamBuilder(
-              stream: _firestore.collection('cart').snapshots(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) return CircularProgressIndicator();
-                var cartItems = snapshot.data!.docs;
+    final cartProvider = Provider.of<CartProvider>(context);
+    final cartItems = cartProvider.items.values.toList();
 
-                return ListView.builder(
-                  itemCount: cartItems.length,
-                  itemBuilder: (context, index) {
-                    var item = cartItems[index];
-                    return ListTile(
-                      title: Text(item['productname']),
-                      subtitle: Text('Quantity: ${item['quantity']}'),
-                      trailing: Text('\$${item['price']}'),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-          Text('Total: \$${totalPrice.toStringAsFixed(2)}'),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CheckoutPage(totalPrice: totalPrice),
+    return Scaffold(
+      appBar: AppBar(title: const Text('Cart')),
+      body: cartItems.isEmpty
+          ? const Center(child: Text("Your cart is empty"))
+          : Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: cartItems.length,
+                    itemBuilder: (context, index) {
+                      final item = cartItems[index];
+                      return Card(
+                        margin: const EdgeInsets.all(10),
+                        child: ListTile(
+                          leading: Image.network(item.imageUrl, width: 50),
+                          title: Text(item.title),
+                          subtitle: Text("\$${item.price}"),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.remove),
+                                onPressed: () {
+                                  cartProvider.decreaseQuantity(item);
+                                },
+                              ),
+                              Text("${item.quantity}"),
+                              IconButton(
+                                icon: const Icon(Icons.add),
+                                onPressed: () {
+                                  cartProvider.increaseQuantity(item);
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () {
+                                  cartProvider.removeFromCart(item);
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              );
-            },
-            child: Text('Proceed to Checkout'),
-          ),
-        ],
-      ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (cartItems.isNotEmpty) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CheckoutPage(
+                              cartItems: cartItems,
+                              totalBill: cartProvider.totalPrice,
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    child: const Text("Proceed to Checkout"),
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }

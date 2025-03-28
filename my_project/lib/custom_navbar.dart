@@ -13,26 +13,6 @@ class CustomNavbar extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _CustomNavbarState extends State<CustomNavbar> {
-  User? user = FirebaseAuth.instance.currentUser;
-  String username = "";
-
-  @override
-  void initState() {
-    super.initState();
-    fetchUsername();
-  }
-
-  void fetchUsername() async {
-    if (user != null) {
-      DocumentSnapshot userData =
-          await FirebaseFirestore.instance.collection('users').doc(user!.uid).get();
-
-      setState(() {
-        username = userData['username'] ?? ""; // ✅ Fetch username from Firestore
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return AppBar(
@@ -56,42 +36,75 @@ class _CustomNavbarState extends State<CustomNavbar> {
           onPressed: () => Navigator.pushNamed(context, '/cart'),
         ),
 
-        // ✅ Show Profile Icon if Logged In
-        user != null
-            ? PopupMenuButton(
-                icon: CircleAvatar(
-                  backgroundColor: Colors.white,
-                  child: Text(username.isNotEmpty ? username[0].toUpperCase() : "U"),
-                ),
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    child: Text("Username: $username"), // ✅ Show username
-                  ),
-                  PopupMenuItem(
-                    child: Text("Email: ${user!.email}"),
-                  ),
-                  PopupMenuItem(
-                    child: Text("Logout"),
-                    onTap: () async {
-                      await FirebaseAuth.instance.signOut();
-                      setState(() {
-                        user = null;
-                        username = "";
-                      });
-                      Navigator.pushReplacementNamed(context, '/home');
-                    },
-                  ),
-                ],
-              )
-            : TextButton(
+        // ✅ **StreamBuilder for Live Auth State**
+        StreamBuilder<User?>(
+          stream: FirebaseAuth.instance.authStateChanges(),
+          builder: (context, snapshot) {
+            User? user = snapshot.data;
+
+            if (user == null) {
+              return TextButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SignupPage()),
-                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpPage()));
                 },
                 child: Text("Sign Up / Login", style: TextStyle(color: Colors.white)),
-              ),
+              );
+            }
+
+            // ✅ **Firestore FutureBuilder for Username Fetch**
+            return FutureBuilder<DocumentSnapshot>(
+              future: FirebaseFirestore.instance.collection('Users').doc(user.uid).get(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData || !snapshot.data!.exists) {
+                  return _buildProfileMenu(context, user, "User");
+                }
+
+                // ✅ **Username Fetch Properly**
+                String username = snapshot.data!.get('username') ?? "User";
+                return _buildProfileMenu(context, user, username);
+              },
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  // ✅ **Profile Dropdown Menu**
+  Widget _buildProfileMenu(BuildContext context, User user, String username) {
+    return PopupMenuButton<int>(
+      icon: CircleAvatar(
+        backgroundColor: Colors.white,
+        child: Text(username.isNotEmpty ? username[0].toUpperCase() : "U"), // ✅ First letter of Username
+      ),
+      onSelected: (value) async {
+        if (value == 1) {
+          await FirebaseAuth.instance.signOut();
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem<int>(
+          value: 0,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(username, style: TextStyle(fontWeight: FontWeight.bold)), // ✅ Show username only
+              Text(user.email ?? "", style: TextStyle(fontSize: 12, color: Colors.grey)), // ✅ Show email only
+              Divider(),
+            ],
+          ),
+        ),
+        PopupMenuItem<int>(
+          value: 1,
+          child: Row(
+            children: [
+              Icon(Icons.logout, color: Colors.red),
+              SizedBox(width: 10),
+              Text("Logout", style: TextStyle(color: Colors.red)),
+            ],
+          ),
+        ),
       ],
     );
   }
