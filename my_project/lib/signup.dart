@@ -20,6 +20,7 @@ class _SignUpPageState extends State<SignUpPage> {
         password: passwordController.text.trim(),
       );
 
+      // Default role is 'user'
       await FirebaseFirestore.instance.collection('Users').doc(userCredential.user!.uid).set({
         'email': emailController.text.trim(),
         'username': usernameController.text.trim(),
@@ -30,11 +31,11 @@ class _SignUpPageState extends State<SignUpPage> {
     } on FirebaseAuthException catch (e) {
       String errorMessage = "Signup failed. Please try again.";
       if (e.code == 'email-already-in-use') {
-        errorMessage = "This email address is already in use in another account.";
+        errorMessage = "This email address is already in use.";
       } else if (e.code == 'weak-password') {
-        errorMessage = "The password provided is too weak.";
+        errorMessage = "The password is too weak.";
       } else if (e.code == 'invalid-email') {
-        errorMessage = "The email address is not valid.";
+        errorMessage = "Invalid email format.";
       }
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorMessage)));
     }

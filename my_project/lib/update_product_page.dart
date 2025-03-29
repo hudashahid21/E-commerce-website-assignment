@@ -3,17 +3,16 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'product_list_page.dart';
 
-class AddProductPage extends StatefulWidget {
-  const AddProductPage({super.key});
+class UpdateProductPage extends StatefulWidget {
+  final String productId;
+  const UpdateProductPage({super.key, required this.productId});
 
   @override
-  State<AddProductPage> createState() => _AddProductPageState();
+  State<UpdateProductPage> createState() => _UpdateProductPageState();
 }
 
-class _AddProductPageState extends State<AddProductPage> {
+class _UpdateProductPageState extends State<UpdateProductPage> {
   CollectionReference products = FirebaseFirestore.instance.collection('products');
   TextEditingController titleController = TextEditingController();
   TextEditingController desController = TextEditingController();
@@ -24,12 +23,19 @@ class _AddProductPageState extends State<AddProductPage> {
   @override
   void initState() {
     super.initState();
-    requestPermissions();
+    loadProductData();
   }
 
-  Future<void> requestPermissions() async {
-    await Permission.storage.request();
-    await Permission.photos.request();
+  Future<void> loadProductData() async {
+    DocumentSnapshot product = await products.doc(widget.productId).get();
+    if (product.exists) {
+      setState(() {
+        titleController.text = product['title'];
+        desController.text = product['description'];
+        priceController.text = product['price'].toString();
+        imageUrl = product['image'];
+      });
+    }
   }
 
   Future<void> getImage() async {
@@ -42,7 +48,7 @@ class _AddProductPageState extends State<AddProductPage> {
     }
   }
 
-  Future<void> addProduct() async {
+  Future<void> updateProduct() async {
     if (titleController.text.isEmpty ||
         desController.text.isEmpty ||
         priceController.text.isEmpty ||
@@ -60,7 +66,7 @@ class _AddProductPageState extends State<AddProductPage> {
     );
 
     try {
-      await products.add({
+      await products.doc(widget.productId).update({
         'title': titleController.text,
         'description': desController.text,
         'price': double.parse(priceController.text),
@@ -68,24 +74,15 @@ class _AddProductPageState extends State<AddProductPage> {
       });
 
       Navigator.pop(context);
-      titleController.clear();
-      desController.clear();
-      priceController.clear();
-      setState(() => imageUrl = null);
-
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Product added successfully!")),
+        SnackBar(content: Text("Product updated successfully!")),
       );
 
-      // Navigate to product list page
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ProductListPage()),
-      );
+      Navigator.pop(context);
     } catch (error) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to add product: $error")),
+        SnackBar(content: Text("Failed to update product: $error")),
       );
     }
   }
@@ -93,7 +90,7 @@ class _AddProductPageState extends State<AddProductPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Add New Product")),
+      appBar: AppBar(title: Text("Update Product")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -140,8 +137,8 @@ class _AddProductPageState extends State<AddProductPage> {
               SizedBox(height: 20),
               Center(
                 child: ElevatedButton(
-                  onPressed: addProduct,
-                  child: Text("Add Product"),
+                  onPressed: updateProduct,
+                  child: Text("Update Product"),
                 ),
               ),
             ],

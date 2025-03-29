@@ -7,7 +7,7 @@ import 'signup.dart';
 
 class LoginPage extends StatefulWidget {
   final String? redirectTo;
-  final String? productTitle; // ✅ Fix: Added productTitle parameter
+  final String? productTitle;
 
   const LoginPage({Key? key, this.redirectTo, this.productTitle}) : super(key: key);
 
@@ -31,20 +31,27 @@ class _LoginPageState extends State<LoginPage> {
           .doc(userCredential.user!.uid)
           .get();
 
-      String? role = userDoc.exists ? userDoc['role'] : 'user';
+      if (userDoc.exists) {
+        String role = userDoc['role'] ?? 'user'; // Default 'user' if role not found
 
-      if (widget.redirectTo == 'product_detail') {
-        Navigator.pop(context, widget.productTitle); // ✅ Redirecting to product detail page
-      } else if (role == "admin") {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => AddProductPage()),
-        );
+        if (role == "admin") {
+          // Admin goes to Add Product Page
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => AddProductPage()),
+          );
+        } else if (widget.redirectTo == 'product_detail') {
+          // Redirecting user back to product detail if needed
+          Navigator.pop(context, widget.productTitle);
+        } else {
+          // Normal user goes to Home Page
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomePage()),
+          );
+        }
       } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage()),
-        );
+        throw Exception("User not found.");
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
