@@ -54,10 +54,10 @@ class CartProvider with ChangeNotifier {
     if (_items.containsKey(id)) {
       if (_items[id]!.quantity > 1) {
         _items[id]!.quantity--;
+        _saveCartToFirebase();
       } else {
-        removeItem(id);
+        removeItem(id);  // ⚠️ Directly removing the item from Firebase
       }
-      _saveCartToFirebase();
       notifyListeners();
     }
   }
@@ -71,25 +71,29 @@ class CartProvider with ChangeNotifier {
   }
 
   void removeItem(String id) {
-    _items.remove(id);
-    _saveCartToFirebase();
-    notifyListeners();
+    if (_items.containsKey(id)) {
+      _items.remove(id);
+      _saveCartToFirebase();  // ✅ Remove only the specific item from Firebase
+      notifyListeners();
+    }
   }
 
   CartItem? getCartItem(String id) {
     return _items[id];
   }
 
-  void _saveCartToFirebase() {
+  void _saveCartToFirebase() async {
     final cartCollection = FirebaseFirestore.instance.collection('cart');
-    cartCollection.doc('user_cart').set({
-      'items': _items.values.map((item) => item.toMap()).toList(),
-    });
+
+    if (_items.isNotEmpty) {
+      await cartCollection.doc('user_cart').set({
+        'items': _items.values.map((item) => item.toMap()).toList(),
+      }, SetOptions(merge: true));  // ✅ Now it merges data instead of overwriting
+    }
   }
 
   void clearCart() {
     _items.clear();
-    FirebaseFirestore.instance.collection('cart').doc('user_cart').delete();
-    notifyListeners();
+    notifyListeners();  // ✅ Firebase se cart delete nahi hoga, sirf local cart clear hoga
   }
 }
